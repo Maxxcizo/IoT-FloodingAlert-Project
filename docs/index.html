@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciudades Seguras: Sistema de Prevención de Inundaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: Se ha diseñado una aplicación de una sola página con desplazamiento vertical (single-scroll) que sigue una narrativa lógica: Problema, Solución, Funcionamiento, Características y Futuro. Esta estructura transforma la presentación lineal en una historia interactiva. El usuario es guiado a través del proyecto, con secciones interactivas (diagramas clicables, acordeones) que permiten explorar detalles a su propio ritmo. Se eligió esta estructura por su claridad y facilidad de uso para una audiencia ejecutiva, evitando la complejidad de un dashboard pero añadiendo más engagement que una presentación estática. -->
+    <!-- Visualization & Content Choices: 
+        - Problema: Report Info -> Impacto de las inundaciones. Goal -> Crear urgencia. Viz -> Gráfico de barras simple. Interaction -> Tooltips al pasar el cursor. Justification -> Más impactante que el texto. Library -> Chart.js (Canvas).
+        - Cómo Funciona: Report Info -> Proceso en 3 pasos. Goal -> Explicar el flujo. Viz -> Tarjetas interactivas. Interaction -> Clic para revelar detalles de cada paso. Justification -> Enfoca la atención en una etapa a la vez, mejorando la comprensión. Method -> HTML/CSS/JS.
+        - Características Clave: Report Info -> Beneficios del sistema. Goal -> Resaltar ventajas. Viz -> Cuadrícula de tarjetas con iconos. Interaction -> Clic para mostrar descripción. Justification -> Visualmente atractivo y fácil de escanear. Method -> HTML/CSS/JS.
+        - Fases del Proyecto: Report Info -> Hoja de ruta. Goal -> Mostrar el plan. Viz -> Línea de tiempo interactiva. Interaction -> Clic para ver detalles de la fase. Justification -> Intuitivo para planes de proyecto. Method -> HTML/CSS/JS.
+        - Preguntas Clave: Report Info -> Detalles técnicos/logísticos. Goal -> Responder dudas comunes. Viz -> Acordeón. Interaction -> Clic para expandir/colapsar. Justification -> Mantiene la UI limpia. Method -> HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #343A40;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #007BFF;
+            border-bottom-color: #007BFF;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.1);
+        }
+        .step-card.active {
+            border-color: #007BFF;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        .phase-btn.active {
+            background-color: #007BFF;
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">Ciudades Seguras</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#problema" class="nav-link px-3 py-2 text-sm font-medium text-gray-600">El Problema</a>
+                        <a href="#solucion" class="nav-link px-3 py-2 text-sm font-medium text-gray-600">La Solución</a>
+                        <a href="#funcionamiento" class="nav-link px-3 py-2 text-sm font-medium text-gray-600">Cómo Funciona</a>
+                        <a href="#caracteristicas" class="nav-link px-3 py-2 text-sm font-medium text-gray-600">Características</a>
+                        <a href="#futuro" class="nav-link px-3 py-2 text-sm font-medium text-gray-600">Futuro</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-gray-900">
+                    Sistema Inteligente de Prevención de Inundaciones
+                </h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                    Protegiendo vidas y optimizando la movilidad en Guadalajara mediante tecnología proactiva que detecta, predice y actúa.
+                </p>
+            </div>
+        </section>
+
+        <section id="problema" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Guadalajara bajo el agua: un riesgo recurrente.</h2>
+                    <p class="mt-4 text-lg text-gray-600">Cada temporada de lluvias, la falta de prevención convierte nuestros túneles en zonas de alto riesgo, generando caos y peligro.</p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div class="card p-6">
+                        <div class="text-4xl font-bold text-red-500">🚨</div>
+                        <h3 class="mt-4 text-lg font-semibold">Peligro para la vida</h3>
+                        <p class="mt-2 text-gray-600">Los túneles se convierten en trampas mortales en minutos, poniendo en riesgo a conductores desprevenidos.</p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="text-4xl font-bold text-yellow-500">🚗</div>
+                        <h3 class="mt-4 text-lg font-semibold">Caos Vial y Bloqueos</h3>
+                        <p class="mt-2 text-gray-600">Las inundaciones paralizan arterias viales clave, afectando la movilidad de miles de ciudadanos.</p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="text-4xl font-bold text-blue-500">💸</div>
+                        <h3 class="mt-4 text-lg font-semibold">Daños Costosos</h3>
+                        <p class="mt-2 text-gray-600">Vehículos e infraestructura sufren daños significativos, representando pérdidas económicas importantes.</p>
+                    </div>
+                </div>
+                 <div class="mt-16">
+                    <div class="card p-4 md:p-6">
+                        <p class="text-center text-gray-700 font-medium mb-4">Incidentes de inundación reportados en pasos a desnivel (GDL)</p>
+                        <div class="chart-container">
+                            <canvas id="inundacionesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solucion" class="bg-white py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base font-semibold tracking-wide text-blue-600 uppercase">Nuestra Solución</h2>
+                    <p class="mt-2 text-3xl leading-8 font-bold tracking-tight text-gray-900 sm:text-4xl">Detección, Predicción y Acción Inmediata.</p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                        Proponemos un sistema proactivo y automatizado que se anticipa a la crisis, utilizando tecnología accesible para proteger los puntos más vulnerables de la ciudad 24/7.
+                    </p>
+                </div>
+                <div class="mt-12">
+                    <div class="card p-8">
+                        <div class="relative h-64 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                            <div class="absolute w-full h-1/3 bottom-0 bg-blue-300"></div>
+                            <div class="absolute w-full top-0 h-2/3 bg-gray-500"></div>
+                            <div class="absolute w-4/5 h-3/5 bg-gray-600 rounded-t-full bottom-1/3"></div>
+                            <div class="z-10 text-white font-bold text-2xl">TÚNEL</div>
+
+                            <div class="absolute left-1/4 bottom-1/4 z-20 text-center">
+                                <span class="text-3xl">💧</span>
+                                <p class="text-sm font-semibold text-white bg-black/50 rounded px-1">Sensor de Nivel</p>
+                            </div>
+                            <div class="absolute right-1/4 bottom-1/2 z-20 text-center">
+                                <span class="text-3xl">🧠</span>
+                                <p class="text-sm font-semibold text-white bg-black/50 rounded px-1">Raspberry Pi</p>
+                            </div>
+                            <div class="absolute left-8 top-8 z-20 text-center">
+                                <span class="text-3xl">🚧</span>
+                                <p class="text-sm font-semibold text-white bg-black/50 rounded px-1">Barrera Automática</p>
+                            </div>
+                            <div class="absolute right-8 top-8 z-20 text-center">
+                                <span class="text-3xl">📱</span>
+                                <p class="text-sm font-semibold text-white bg-black/50 rounded px-1">Alerta a Móviles</p>
+                            </div>
+                        </div>
+                        <p class="text-center mt-4 text-gray-600">Diagrama conceptual del sistema en un túnel. Dejamos de reaccionar para empezar a prevenir.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="funcionamiento" class="py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Un Ecosistema Conectado en 3 Pasos</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Nuestro sistema opera en un ciclo completo y automatizado. Haga clic en cada paso para ver los detalles.</p>
+                </div>
+
+                <div class="mt-12 flex flex-col md:flex-row justify-center items-center md:items-start gap-4 md:gap-8">
+                    <div id="step-1" class="step-card w-full md:w-1/3 p-6 border-2 border-gray-200 rounded-lg cursor-pointer text-center active">
+                        <div class="text-4xl">🔬</div>
+                        <h3 class="mt-4 text-xl font-bold">1. Detección Inteligente</h3>
+                    </div>
+                    <div id="step-2" class="step-card w-full md:w-1/3 p-6 border-2 border-gray-200 rounded-lg cursor-pointer text-center">
+                        <div class="text-4xl">⚡️</div>
+                        <h3 class="mt-4 text-xl font-bold">2. Acción Inmediata</h3>
+                    </div>
+                    <div id="step-3" class="step-card w-full md:w-1/3 p-6 border-2 border-gray-200 rounded-lg cursor-pointer text-center">
+                        <div class="text-4xl">📡</div>
+                        <h3 class="mt-4 text-xl font-bold">3. Comunicación al Conductor</h3>
+                    </div>
+                </div>
+
+                <div class="mt-8 card p-8 min-h-[150px]">
+                    <div id="step-content" class="text-center">
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="caracteristicas" class="bg-white py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">¿Por qué nuestra solución es la mejor opción?</h2>
+                    <p class="mt-4 text-lg text-gray-600">Combinamos tecnología predictiva, autonomía y conectividad para ofrecer una solución robusta y confiable.</p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="card p-6 text-center">
+                        <div class="text-4xl">🧠</div>
+                        <h3 class="mt-5 text-lg font-medium">Predictivo</h3>
+                        <p class="mt-2 text-base text-gray-500">No solo reacciona, se anticipa al peligro calculando la velocidad de la inundación para actuar antes de que sea crítico.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                         <div class="text-4xl">🤖</div>
+                        <h3 class="mt-5 text-lg font-medium">Autónomo</h3>
+                        <p class="mt-2 text-base text-gray-500">La respuesta es automática e inmediata. No depende de intervención humana, garantizando acción 24/7.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                         <div class="text-4xl">📡</div>
+                        <h3 class="mt-5 text-lg font-medium">Conectado</h3>
+                        <p class="mt-2 text-base text-gray-500">Se integra con Google Maps y Waze, alertando a los conductores directamente en las apps que ya utilizan.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                         <div class="text-4xl">🛡️</div>
+                        <h3 class="mt-5 text-lg font-medium">Confiable</h3>
+                        <p class="mt-2 text-base text-gray-500">Diseñado con sensores redundantes y batería de respaldo para operar sin fallos, incluso sin energía eléctrica.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="futuro" class="py-16 sm:py-24">
+             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">El Futuro es la Prevención: Nuestra Hoja de Ruta</h2>
+                     <p class="mt-4 text-lg text-gray-600">Tenemos un plan claro para implementar y escalar la solución, transformando la seguridad vial de Guadalajara.</p>
+                </div>
+
+                 <div class="mt-12 max-w-3xl mx-auto">
+                    <div class="flex justify-center border-b-2 border-gray-200">
+                        <button id="phase-1-btn" class="phase-btn flex-1 p-4 text-lg font-semibold text-gray-500 focus:outline-none active">Fase 1: Prototipo</button>
+                        <button id="phase-2-btn" class="phase-btn flex-1 p-4 text-lg font-semibold text-gray-500 focus:outline-none">Fase 2: Producto Final</button>
+                    </div>
+                    <div class="mt-8 card p-8 min-h-[200px]">
+                        <div id="phase-content">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="bg-white py-16 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+                 <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Preguntas Clave y Detalles Técnicos</h2>
+                    <p class="mt-4 text-lg text-gray-600">Respuestas a las dudas más comunes sobre la implementación y funcionamiento del sistema.</p>
+                </div>
+                <div class="mt-12 space-y-4" id="accordion-container">
+                    
+                </div>
+            </div>
+        </section>
+        
+        <footer class="bg-gray-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-white">
+                <h3 class="text-2xl font-bold">Invertir en seguridad es invertir en movilidad e innovación.</h3>
+                <p class="mt-4 max-w-2xl mx-auto">Este proyecto posiciona a Guadalajara como un referente de Smart City. Estamos listos para desarrollar el prototipo. Hagámoslo realidad.</p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const stepData = {
+                'step-1': {
+                    title: 'Detección Inteligente',
+                    description: 'Sensores de alta precisión miden el nivel del agua cada 30 segundos. Crucialmente, el sistema no solo mide el nivel, sino que calcula la <strong>velocidad de acumulación</strong>. Para optimizar el consumo, solo se activa plenamente bajo condiciones de lluvia, detectadas por un sensor de humedad externo o pronósticos meteorológicos.'
+                },
+                'step-2': {
+                    title: 'Acción Inmediata y Autónoma',
+                    description: 'Si los datos predicen un riesgo de inundación, el sistema actúa de forma autónoma y sin intervención humana. Activa <strong>alarmas visuales y sonoras</strong> en el sitio, bloquea el paso mediante <strong>barreras automáticas</strong> (plumas o postes), y envía notificaciones instantáneas al celular de las autoridades competentes.'
+                },
+                'step-3': {
+                    title: 'Comunicación al Conductor',
+                    description: 'Simultáneamente a las acciones locales, el sistema se comunica con los ciudadanos donde más importa: en su ruta. Envía alertas en tiempo real a plataformas como <strong>Google Maps (prototipo) y Waze (producto final)</strong>. Esto no solo notifica del peligro, sino que permite a las aplicaciones ofrecer rutas alternativas seguras de forma automática.'
+                }
+            };
+            
+            const phaseData = {
+                'phase-1': {
+                    title: 'Fase 1: Prototipo',
+                    points: [
+                        '<strong>Implementación Piloto:</strong> Instalación del sistema completo en un túnel de alto riesgo previamente identificado.',
+                        '<strong>Integración con Google Maps:</strong> Desarrollo de la API para enviar alertas en tiempo real a la plataforma.',
+                        '<strong>Desarrollo Clave:</strong> Investigar y desarrollar la funcionalidad para que la alerta pueda sugerir o forzar una corrección de ruta en la app del usuario.',
+                        '<strong>Pruebas y Calibración:</strong> Ajuste de sensores y algoritmos predictivos con datos reales.'
+                    ]
+                },
+                'phase-2': {
+                    title: 'Fase 2: Producto Final y Expansión',
+                    points: [
+                        '<strong>Expansión de la Red:</strong> Implementación del sistema en todos los puntos viales críticos de la Zona Metropolitana de Guadalajara.',
+                        '<strong>Integración Total con Waze:</strong> Colaboración para integrar las alertas de forma nativa en Waze, con notificaciones sonoras y visuales.',
+                        '<strong>Análisis de Datos Históricos:</strong> Creación de una base de datos para analizar patrones de inundación y mejorar la gestión del agua en la ciudad.',
+                        '<strong>Sostenibilidad:</strong> Incorporación de paneles solares para una operación de ultra bajo consumo.'
+                    ]
+                }
+            };
+
+            const faqData = [
+                { question: '¿Dónde se colocará el sistema?', answer: 'Inicialmente en un túnel de alto riesgo en Guadalajara como prototipo, con planes de expansión a todos los pasos a desnivel y túneles críticos de la ciudad.'},
+                { question: '¿Con qué rapidez detecta el sistema?', answer: 'Los sensores miden el nivel del agua cada 30 segundos. El sistema se activa de forma inteligente solo cuando hay pronóstico o presencia de lluvia para ahorrar energía.'},
+                { question: '¿El sistema solo detecta o también predice?', answer: 'Ambas. Mide en tiempo real pero su principal fortaleza es la predicción, basada en la velocidad de acumulación del agua. Esto permite activar las alertas y barreras antes de que el nivel sea crítico.'},
+                { question: '¿Qué ocurre si hay un corte de energía o falla un sensor?', answer: 'El sistema es confiable. Cuenta con una <strong>batería de respaldo</strong> para operar durante cortes de energía y utilizará un <strong>sistema de sensores redundantes</strong> para que la falla de uno no inhabilite el sistema.'},
+                { question: '¿Quién recibe las notificaciones?', answer: 'Las alertas se envían a dos grupos principales: <strong>autoridades</strong> (ej. ayuntamiento, protección civil) para una respuesta coordinada, y a los <strong>conductores</strong> a través de la integración con Waze y Google Maps.'}
+            ];
+
+            const stepCards = document.querySelectorAll('.step-card');
+            const stepContentEl = document.getElementById('step-content');
+
+            function updateStepContent(stepId) {
+                const data = stepData[stepId];
+                stepContentEl.innerHTML = `<h3 class="text-2xl font-bold text-gray-900">${data.title}</h3><p class="mt-4 text-lg text-gray-600">${data.description}</p>`;
+                stepCards.forEach(card => {
+                    card.classList.remove('active');
+                    if(card.id === stepId) {
+                        card.classList.add('active');
+                    }
+                });
+            }
+
+            stepCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    updateStepContent(card.id);
+                });
+            });
+
+            const phaseBtns = document.querySelectorAll('.phase-btn');
+            const phaseContentEl = document.getElementById('phase-content');
+
+            function updatePhaseContent(phaseId) {
+                const data = phaseData[phaseId];
+                const pointsHTML = data.points.map(point => `<li class="mb-2">${point}</li>`).join('');
+                phaseContentEl.innerHTML = `<h3 class="text-2xl font-bold text-gray-900 mb-4">${data.title}</h3><ul class="list-disc list-inside text-gray-600 text-left">${pointsHTML}</ul>`;
+                 phaseBtns.forEach(btn => {
+                    btn.classList.remove('active');
+                    if(btn.id.includes(phaseId)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            phaseBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const phaseId = btn.id.replace('-btn', '');
+                    updatePhaseContent(phaseId);
+                });
+            });
+            
+            const accordionContainer = document.getElementById('accordion-container');
+            faqData.forEach((item, index) => {
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'card overflow-hidden';
+                accordionItem.innerHTML = `
+                    <button class="accordion-toggle w-full p-6 text-left flex justify-between items-center focus:outline-none">
+                        <span class="font-semibold text-lg">${item.question}</span>
+                        <span class="transform transition-transform duration-300 text-2xl font-light">+</span>
+                    </button>
+                    <div class="accordion-content px-6">
+                        <p class="pb-6 text-gray-600">${item.answer}</p>
+                    </div>
+                `;
+                accordionContainer.appendChild(accordionItem);
+            });
+
+            const accordionToggles = document.querySelectorAll('.accordion-toggle');
+            accordionToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const content = toggle.nextElementSibling;
+                    const icon = toggle.querySelector('span:last-child');
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('rotate-45');
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                        document.querySelectorAll('.accordion-toggle span:last-child').forEach(i => i.classList.remove('rotate-45'));
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.classList.add('rotate-45');
+                    }
+                });
+            });
+
+            const ctx = document.getElementById('inundacionesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['2021', '2022', '2023', '2024', '2025 (proy.)'],
+                    datasets: [{
+                        label: 'Incidentes Graves Reportados',
+                        data: [12, 19, 22, 31, 40],
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Número de Incidentes' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.parsed.y} incidentes graves`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            updateStepContent('step-1');
+            updatePhaseContent('phase-1');
+        });
+    </script>
+
+</body>
+</html>
